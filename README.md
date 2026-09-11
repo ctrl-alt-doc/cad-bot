@@ -129,6 +129,19 @@ npm start
 
 The release install uses the compiled registration script, so development dependencies are not required.
 
+## Automated releases
+
+GitHub Actions runs the build, tests, and npm package inspection for pushes and pull requests targeting `main`.
+
+To publish a release, update `package.json` and `package-lock.json` to the new version, commit the change, and push a matching tag:
+
+```bash
+git tag v1.0.3
+git push origin v1.0.3
+```
+
+A matching `v<version>` tag runs the release workflow. It creates the GitHub release tarball, publishes the package to npm, and attaches the tarball to the GitHub release. The repository must have an `NPM_TOKEN` Actions secret with permission to publish `cad-discord`.
+
 ## Install from npm
 
 The public [`cad-discord` npm package](https://www.npmjs.com/package/cad-discord) is the quickest way to install the bot. GitHub Releases remain available when you want a versioned archive instead.
