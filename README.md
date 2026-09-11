@@ -2,6 +2,8 @@
 
 This is the Discord companion for [ctrl alt doc](https://github.com/simongrieve/ctrlaltdoc). It provides a small Discord interface to a configured CAD documentation site.
 
+[Download the latest release](https://github.com/ctrl-alt-doc/cad-bot/releases/latest)
+
 The bot is deliberately a thin integration layer:
 
 ```text
@@ -81,10 +83,10 @@ Run it directly from TypeScript during development:
 npm run dev
 ```
 
-Register the guild-scoped `/docs` command:
+Register the `/docs` command during development:
 
 ```bash
-npm run register
+npm run register:dev
 ```
 
 When `DISCORD_GUILD_ID` is set, the script registers guild commands, which update immediately and are useful during development. When it is omitted, the script registers global commands for a public installation; Discord notes that global command updates can take longer to propagate. Do not omit the guild ID accidentally during local development.
@@ -119,8 +121,11 @@ cd cad-discord-<version>
 npm ci --omit=dev
 cp .env.example .env
 # edit .env
+npm run register
 npm start
 ```
+
+The release install uses the compiled registration script, so development dependencies are not required.
 
 CAD requests have a bounded timeout. If the configured CAD server is unreachable or does not respond in time, the bot returns a generic documentation-server error rather than waiting indefinitely.
 
