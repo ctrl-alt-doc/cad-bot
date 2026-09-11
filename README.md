@@ -4,6 +4,8 @@ This is the Discord companion for [ctrl alt doc](https://github.com/simongrieve/
 
 [Download the latest release](https://github.com/ctrl-alt-doc/cad-bot/releases/latest)
 
+[Install `cad-discord` from npm](https://www.npmjs.com/package/cad-discord)
+
 The bot is deliberately a thin integration layer:
 
 ```text
@@ -129,7 +131,7 @@ The release install uses the compiled registration script, so development depend
 
 ## Install from npm
 
-GitHub Releases are the canonical self-hosting archive. The same runtime is also available as the public `cad-discord` npm package:
+The public [`cad-discord` npm package](https://www.npmjs.com/package/cad-discord) is the quickest way to install the bot. GitHub Releases remain available when you want a versioned archive instead.
 
 ```bash
 npm install --global cad-discord
