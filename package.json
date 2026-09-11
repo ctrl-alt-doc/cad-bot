@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "release": "npm run build && npm test && node scripts/create-release.mjs",
     "dev": "tsx src/index.ts",
     "register": "tsx src/register-commands.ts",
     "start": "node dist/index.js"

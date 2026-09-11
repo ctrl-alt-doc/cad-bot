@@ -95,6 +95,33 @@ Run compiled output:
 npm start
 ```
 
+## Create a release tarball
+
+Create a versioned runtime archive after building and testing:
+
+```bash
+npm run release
+```
+
+This creates:
+
+```text
+release/cad-discord-<version>.tar.gz
+```
+
+The archive contains the compiled `dist/` directory, package metadata, `.env.example`, and this README. It does not contain `.env`, `node_modules`, or development tests.
+
+An operator can install it with:
+
+```bash
+tar -xzf cad-discord-<version>.tar.gz
+cd cad-discord-<version>
+npm ci --omit=dev
+cp .env.example .env
+# edit .env
+npm start
+```
+
 CAD requests have a bounded timeout. If the configured CAD server is unreachable or does not respond in time, the bot returns a generic documentation-server error rather than waiting indefinitely.
 
 The configured CAD site must be running and reachable by the bot. The bot expects these endpoints:
