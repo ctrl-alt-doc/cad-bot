@@ -127,6 +127,32 @@ npm start
 
 The release install uses the compiled registration script, so development dependencies are not required.
 
+## Install from npm
+
+GitHub Releases are the canonical self-hosting archive. The same runtime is also available as the public `cad-discord` npm package:
+
+```bash
+npm install --global cad-discord
+```
+
+Create a directory for the deployment and copy the example configuration from the installed package:
+
+```bash
+mkdir cad-discord-config
+cd cad-discord-config
+cp "$(npm root --global)/cad-discord/.env.example" .env
+# edit .env
+```
+
+Then register the commands and start the bot:
+
+```bash
+cad-discord-register
+cad-discord
+```
+
+The npm package exposes `cad-discord` to start the bot and `cad-discord-register` to register its slash commands. Both commands use the `.env` file in the current working directory.
+
 CAD requests have a bounded timeout. If the configured CAD server is unreachable or does not respond in time, the bot returns a generic documentation-server error rather than waiting indefinitely.
 
 The configured CAD site must be running and reachable by the bot. The bot expects these endpoints:
