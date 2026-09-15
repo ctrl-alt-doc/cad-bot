@@ -1,5 +1,8 @@
 {
     "name": "cad-discord",
     "main": "src/index.ts",
-    "compatibility_date": "2026-09-13"
+    "compatibility_date": "2026-09-13",
+    "vars": {
+        "CAD_BASE_URL": "https://docs.ctrlaltdoc.cc"
+    }
 }

@@ -28,7 +28,6 @@ const commands = [
                         .setName('query')
                         .setDescription('What do you want to find?')
                         .setRequired(true)
-                        .setAutocomplete(true)
                 )
         )
         .addSubcommand((subcommand) =>
@@ -40,6 +39,7 @@ const commands = [
                         .setName('slug')
                         .setDescription('The documentation page slug')
                         .setRequired(true)
+                        .setAutocomplete(true)
                 )
         )
         .addSubcommand((subcommand) =>

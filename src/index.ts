@@ -1,136 +1,294 @@
-import 'dotenv/config';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { verifyKey } from 'discord-interactions';
 import { CadClient } from './cad/client.js';
 import {
     formatPageList,
     formatPageResult,
     formatSearchResults
 } from './discord/responses.js';
-const token = process.env.DISCORD_TOKEN;
-const cadBaseUrl = process.env.CAD_BASE_URL;
-
-if (!token) {
-    throw new Error('DISCORD_TOKEN is not configured');
+interface Env {
+    DISCORD_PUBLIC_KEY: string;
+    CAD_BASE_URL: string;
 }
 
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
-});
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    if (request.method !== 'POST') {
+      return new Response('Not Found', { status: 404 });
+    }
 
-const cadClient = cadBaseUrl
-    ? new CadClient(cadBaseUrl)
-    : null;
+    const signature = request.headers.get('X-Signature-Ed25519');
+    const timestamp = request.headers.get('X-Signature-Timestamp');
+    const body = await request.text();
 
-client.once('clientReady', (client) => {
-    console.log(`Logged in as ${client.user.tag}`);
-});
+    if (!signature || !timestamp) {
+      return new Response('Invalid request signature', {
+        status: 401
+      });
+    }
 
-client.on('interactionCreate', async (interaction) => {
-    if (interaction.isAutocomplete()) {
-        if (interaction.commandName !== 'docs' || !cadClient) {
-            await interaction.respond([]);
-            return;
+    const valid = await verifyKey(
+      body,
+      signature,
+      timestamp,
+      env.DISCORD_PUBLIC_KEY
+    );
+
+    if (!valid) {
+      return new Response('Invalid request signature', {
+        status: 401
+      });
+    }
+
+    const interaction = JSON.parse(body) as {
+        type: number;
+        data?: {
+            name: string;
+            options?: Array<{
+                name: string;
+                options?: Array<{
+                    name: string;
+                    value?: string;
+                    focused?: boolean;
+                }>;
+            }>;
+        };
+    };
+
+    // Discord PING
+    if (interaction.type === 1) {
+      return Response.json({
+        type: 1
+      });
+    }
+    if (interaction.type === 4) {
+        if (interaction.data?.name !== 'docs') {
+            return Response.json({
+                type: 8,
+                data: {
+                    choices: []
+                }
+            });
         }
 
-        const subcommand = interaction.options.getSubcommand();
-        const kind = subcommand === 'list' ? 'category' : 'page';
-        const query = interaction.options.getFocused();
+        const subcommand = interaction.data.options?.[0];
+
+        if (!subcommand) {
+            return Response.json({
+                type: 8,
+                data: {
+                    choices: []
+                }
+            });
+        }
+
+        let kind: 'page' | 'category';
+
+        if (subcommand.name === 'page') {
+            kind = 'page';
+        } else if (subcommand.name === 'list') {
+            kind = 'category';
+        } else {
+            return Response.json({
+                type: 8,
+                data: {
+                    choices: []
+                }
+            });
+        }
+
+        const focusedOption = subcommand.options?.find(
+            (option) => option.focused
+        );
+
+        const query = focusedOption?.value ?? '';
+        const cadClient = new CadClient(env.CAD_BASE_URL);
 
         try {
             const suggestions = await cadClient.suggest(query, kind);
 
-            await interaction.respond(
-                suggestions.map((suggestion) => ({
-                    name: suggestion.title,
-                    value: suggestion.slug
-                }))
-            );
+            return Response.json({
+                type: 8,
+                data: {
+                    choices: suggestions.map((suggestion) => ({
+                        name: suggestion.title,
+                        value: suggestion.slug
+                    }))
+                }
+            });
         } catch (error) {
             console.error('CAD autocomplete failed:', error);
-            await interaction.respond([]);
+
+            return Response.json({
+                type: 8,
+                data: {
+                    choices: []
+                }
+            });
         }
-
-        return;
     }
+    if (interaction.type === 2) {
+      if (interaction.data?.name !== 'docs') {
+        return new Response('Unknown command', {
+          status: 400
+        });
+      }
 
-    if (!interaction.isChatInputCommand()) {
-        return;
-    }
+      const subcommand = interaction.data.options?.[0];
 
-    if (interaction.commandName !== 'docs') {
-        return;
-    }
+      if (subcommand?.name === 'page') {
+          const slugOption = subcommand.options?.find(
+              (option) => option.name === 'slug'
+          );
 
-    const subcommand = interaction.options.getSubcommand();
+          if (!slugOption?.value) {
+              return new Response('Missing slug', {
+                  status: 400
+              });
+          }
 
-    if (subcommand !== 'search' && subcommand !== 'page' && subcommand !== 'list') {
-        return;
-    }
+          const cadClient = new CadClient(env.CAD_BASE_URL);
 
-    const query = subcommand === 'search'
-        ? interaction.options.getString('query', true)
-        : subcommand === 'page'
-            ? interaction.options.getString('slug', true)
-            : null;
+          try {
+              const page = await cadClient.getPage(slugOption.value);
+              const message = formatPageResult(page, env.CAD_BASE_URL);
 
-    if (!cadClient || !cadBaseUrl) {
-        await interaction.reply(
-            'CAD_BASE_URL is not configured yet.'
-        );
-        return;
-    }
+              return Response.json({
+                  type: 4,
+                  data: {
+                      content: message
+                  }
+              });
+          } catch (error) {
+              console.error('CAD page failed:', error);
 
-    try {
-        if (subcommand === 'page') {
-            const page = await cadClient.getPage(query!);
+              let content = 'The documentation server returned an error.';
 
-            await interaction.reply(formatPageResult(page, cadBaseUrl));
-            return;
-        }
+              if (error instanceof Error) {
+                  if (error.message === 'CAD_UNREACHABLE') {
+                      content = 'I couldn’t reach the documentation server.';
+                  } else if (error.message === 'CAD_INVALID_RESPONSE') {
+                      content = 'The documentation server returned an invalid response.';
+                  }
+              }
 
-        if (subcommand === 'list') {
-            const category = interaction.options.getString('category', true);
-            const pages = await cadClient.listPages(category);
+              return Response.json({
+                  type: 4,
+                  data: {
+                      content
+                  }
+              });
+          }
+      }
+      if (subcommand?.name === 'list') {
+          const categoryOption = subcommand.options?.find(
+              (option) => option.name === 'category'
+          );
 
-            await interaction.reply(formatPageList(pages, cadBaseUrl));
-            return;
-        }
+          if (!categoryOption?.value) {
+              return new Response('Missing category', {
+                  status: 400
+              });
+          }
 
-        const results = await cadClient.search(query!);
+          const cadClient = new CadClient(env.CAD_BASE_URL);
+
+          try {
+              const pages = await cadClient.listPages(categoryOption.value);
+              const message = formatPageList(pages, env.CAD_BASE_URL);
+
+              return Response.json({
+                  type: 4,
+                  data: {
+                      content: message
+                  }
+              });
+          } catch (error) {
+              console.error('CAD list failed:', error);
+
+              let content = 'The documentation server returned an error.';
+
+              if (error instanceof Error) {
+                  if (error.message === 'CAD_UNREACHABLE') {
+                      content = 'I couldn’t reach the documentation server.';
+                  } else if (error.message === 'CAD_INVALID_RESPONSE') {
+                      content = 'The documentation server returned an invalid response.';
+                  }
+              }
+
+              return Response.json({
+                  type: 4,
+                  data: {
+                      content
+                  }
+              });
+          }
+      }
+      if (subcommand?.name !== 'search') {
+          return new Response('Unknown subcommand', {
+              status: 400
+          });
+      }
+
+      const queryOption = subcommand.options?.find(
+        (option) => option.name === 'query'
+      );
+
+      if (!queryOption?.value) {
+        return new Response('Missing query', {
+          status: 400
+        });
+      }
+
+      const cadClient = new CadClient(env.CAD_BASE_URL);
+
+      try {
+        const results = await cadClient.search(queryOption.value);
 
         if (results.length === 0) {
-            await interaction.reply(
-                `No documentation found for "${query!}".`
-            );
-            return;
-        }
-
-        const message = formatSearchResults(results, cadBaseUrl, query!);
-        
-        await interaction.reply(message);
-    } catch (error) {
-        console.error('CAD search failed:', error);
-    
-        if (error instanceof Error) {
-            switch (error.message) {
-                case 'CAD_UNREACHABLE':
-                    await interaction.reply(
-                        'I couldn’t reach the documentation server.'
-                    );
-                    return;
-    
-                case 'CAD_INVALID_RESPONSE':
-                    await interaction.reply(
-                        'The documentation server returned an invalid response.'
-                    );
-                    return;
+          return Response.json({
+            type: 4,
+            data: {
+              content: `No documentation found for "${queryOption.value}".`
             }
+          });
         }
-    
-        await interaction.reply(
-            'The documentation server returned an error.'
-        );
-    }
-});
 
-client.login(token);
+        const message = formatSearchResults(
+            results,
+            env.CAD_BASE_URL,
+            queryOption.value
+        );
+
+        return Response.json({
+          type: 4,
+          data: {
+            content: message
+          }
+        });
+      } catch (error) {
+        console.error('CAD search failed:', error);
+
+        let content = 'The documentation server returned an error.';
+
+        if (error instanceof Error) {
+          if (error.message === 'CAD_UNREACHABLE') {
+            content = 'I couldn’t reach the documentation server.';
+          } else if (error.message === 'CAD_INVALID_RESPONSE') {
+            content = 'The documentation server returned an invalid response.';
+          }
+        }
+
+        return Response.json({
+          type: 4,
+          data: {
+            content
+          }
+        });
+      }
+    }
+
+    return new Response('Unknown interaction', {
+      status: 400
+    });
+  }
+};
