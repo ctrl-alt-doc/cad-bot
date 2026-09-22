@@ -1,15 +1,29 @@
 import { verifyKey } from 'discord-interactions';
 import { CadClient } from './cad/client.js';
 import {
-    formatPageList,
     formatPageResult,
-    formatSearchResults
+    formatSearchResults,
+    errorResponse
 } from './discord/responses.js';
+import { brandFor } from './brand.js';
 interface Env {
     DISCORD_PUBLIC_KEY: string;
     CAD_BASE_URL: string;
+    BRAND_AVATAR_URL?: string;
 }
+function cadErrorResponse(error: unknown, brand: ReturnType<typeof brandFor>): Response {
+    let content = 'The documentation server returned an error.';
 
+    if (error instanceof Error) {
+        if (error.message === 'CAD_UNREACHABLE') {
+            content = 'I couldn’t reach the documentation server.';
+        } else if (error.message === 'CAD_INVALID_RESPONSE') {
+            content = 'The documentation server returned an invalid response.';
+        }
+    }
+
+    return Response.json(errorResponse(brand, content));
+}
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {
@@ -53,6 +67,7 @@ export default {
             }>;
         };
     };
+    const brand = brandFor(env.CAD_BASE_URL, env.BRAND_AVATAR_URL);
 
     // Discord PING
     if (interaction.type === 1) {
@@ -81,13 +96,7 @@ export default {
             });
         }
 
-        let kind: 'page' | 'category';
-
-        if (subcommand.name === 'page') {
-            kind = 'page';
-        } else if (subcommand.name === 'list') {
-            kind = 'category';
-        } else {
+        if (subcommand.name !== 'page') {
             return Response.json({
                 type: 8,
                 data: {
@@ -104,7 +113,7 @@ export default {
         const cadClient = new CadClient(env.CAD_BASE_URL);
 
         try {
-            const suggestions = await cadClient.suggest(query, kind);
+            const suggestions = await cadClient.suggest(query, 'page');
 
             return Response.json({
                 type: 8,
@@ -150,77 +159,18 @@ export default {
 
           try {
               const page = await cadClient.getPage(slugOption.value);
-              const message = formatPageResult(page, env.CAD_BASE_URL);
+              const message = formatPageResult(page, env.CAD_BASE_URL, brand);
 
               return Response.json({
                   type: 4,
                   data: {
-                      content: message
+                    ...message
                   }
               });
           } catch (error) {
               console.error('CAD page failed:', error);
 
-              let content = 'The documentation server returned an error.';
-
-              if (error instanceof Error) {
-                  if (error.message === 'CAD_UNREACHABLE') {
-                      content = 'I couldn’t reach the documentation server.';
-                  } else if (error.message === 'CAD_INVALID_RESPONSE') {
-                      content = 'The documentation server returned an invalid response.';
-                  }
-              }
-
-              return Response.json({
-                  type: 4,
-                  data: {
-                      content
-                  }
-              });
-          }
-      }
-      if (subcommand?.name === 'list') {
-          const categoryOption = subcommand.options?.find(
-              (option) => option.name === 'category'
-          );
-
-          if (!categoryOption?.value) {
-              return new Response('Missing category', {
-                  status: 400
-              });
-          }
-
-          const cadClient = new CadClient(env.CAD_BASE_URL);
-
-          try {
-              const pages = await cadClient.listPages(categoryOption.value);
-              const message = formatPageList(pages, env.CAD_BASE_URL);
-
-              return Response.json({
-                  type: 4,
-                  data: {
-                      content: message
-                  }
-              });
-          } catch (error) {
-              console.error('CAD list failed:', error);
-
-              let content = 'The documentation server returned an error.';
-
-              if (error instanceof Error) {
-                  if (error.message === 'CAD_UNREACHABLE') {
-                      content = 'I couldn’t reach the documentation server.';
-                  } else if (error.message === 'CAD_INVALID_RESPONSE') {
-                      content = 'The documentation server returned an invalid response.';
-                  }
-              }
-
-              return Response.json({
-                  type: 4,
-                  data: {
-                      content
-                  }
-              });
+              return cadErrorResponse(error, brand);
           }
       }
       if (subcommand?.name !== 'search') {
@@ -248,7 +198,7 @@ export default {
           return Response.json({
             type: 4,
             data: {
-              content: `No documentation found for "${queryOption.value}".`
+                ...formatSearchResults([], env.CAD_BASE_URL, queryOption.value, brand)
             }
           });
         }
@@ -256,34 +206,20 @@ export default {
         const message = formatSearchResults(
             results,
             env.CAD_BASE_URL,
-            queryOption.value
+            queryOption.value,
+            brand
         );
 
         return Response.json({
           type: 4,
           data: {
-            content: message
+            ...message
           }
         });
       } catch (error) {
         console.error('CAD search failed:', error);
 
-        let content = 'The documentation server returned an error.';
-
-        if (error instanceof Error) {
-          if (error.message === 'CAD_UNREACHABLE') {
-            content = 'I couldn’t reach the documentation server.';
-          } else if (error.message === 'CAD_INVALID_RESPONSE') {
-            content = 'The documentation server returned an invalid response.';
-          }
-        }
-
-        return Response.json({
-          type: 4,
-          data: {
-            content
-          }
-        });
+        return cadErrorResponse(error, brand);
       }
     }
 

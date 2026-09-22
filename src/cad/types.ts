@@ -3,6 +3,9 @@ export interface SearchResult {
     description: string;
     slug: string;
     excerpt: string;
+    section?: string;
+    breadcrumb?: string[];
+    sinceVersion?: string;
 }
 
 export interface PageResult {
@@ -10,11 +13,17 @@ export interface PageResult {
     description: string;
     excerpt: string;
     slug: string;
+    section?: string;
+    breadcrumb?: string[];
+    sinceVersion?: string;
 }
 
 export interface ListResult {
     title: string;
     slug: string;
+    section?: string;
+    breadcrumb?: string[];
+    sinceVersion?: string;
 }
 
 export interface PageListResult {

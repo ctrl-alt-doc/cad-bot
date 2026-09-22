@@ -42,18 +42,6 @@ const commands = [
                         .setAutocomplete(true)
                 )
         )
-        .addSubcommand((subcommand) =>
-            subcommand
-                .setName('list')
-                .setDescription('List the documentation pages')
-                .addStringOption((option) =>
-                    option
-                        .setName('category')
-                        .setDescription('The category slug, such as reference')
-                        .setRequired(true)
-                        .setAutocomplete(true)
-                )
-        )
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);

@@ -19,20 +19,13 @@ CAD remains responsible for finding documents, resolving slugs, and maintaining 
 ```text
 /docs search <query>
 /docs page <slug>
-/docs list category:<slug>
 ```
 
 `/docs search` uses CAD’s title-priority search. A single result is returned directly; multiple results include a heading and compact title/link entries. Discord autocomplete suggests page titles while typing.
 
 `/docs page` retrieves page metadata from CAD. Pages may define an optional YAML `excerpt`; pages without one return no excerpt.
 
-`/docs list` browses the direct pages in a CAD navigation category, for example:
-
-```text
-/docs list category:reference
-```
-
-Responses are plain Discord messages. The bot does not use embeds.
+Responses use a consistent branded embed with an `Open page` link button. Empty and error states use the same accent colour, and error replies are ephemeral. Set `BRAND_AVATAR_URL` to a stable public avatar URL for the embed footer; otherwise the bot uses `/brand/ctrl-alt-bot-512.png` on the CAD site.
 
 ## Requirements
 
@@ -52,7 +45,7 @@ Fill in:
 
 ```text
 DISCORD_TOKEN=          # secret bot token
-DISCORD_CLIENT_ID=      # Discord application ID
+DISCORD_CLIENT_ID=1551648923544846448  # Discord application ID
 DISCORD_GUILD_ID=       # optional: use guild registration during development
 CAD_BASE_URL=http://localhost:5173
 ```
@@ -175,7 +168,6 @@ The configured CAD site must be running and reachable by the bot. The bot expect
 ```text
 GET /api/search?q=<query>
 GET /api/page?slug=<slug>
-GET /api/list?category=<category-slug>
 GET /api/suggest?q=<text>&kind=page|category
 ```
 
@@ -185,7 +177,8 @@ GET /api/suggest?q=<text>&kind=page|category
 - `src/register-commands.ts` registers the guild slash command.
 - `src/cad/client.ts` owns HTTP communication with CAD.
 - `src/cad/types.ts` describes CAD response contracts.
-- `src/discord/responses.ts` formats plain Discord messages.
+- `src/discord/responses.ts` builds the branded embed and link-button payloads.
+- `src/brand.ts` contains the shared brand constants and runtime host/avatar configuration.
 
 The bot requests only the `Guilds` gateway intent. It does not read arbitrary server messages and does not require the privileged Message Content intent.
 
@@ -203,6 +196,8 @@ Each operator can run their own deployment with their own:
 - Discord server;
 - CAD documentation site;
 - hosting and log-retention configuration.
+
+For the pink bot name in Discord, a server admin can give the bot a role with colour `#ff88c8`. The role must be positioned and permissioned appropriately; the bot does not attempt to change its own managed role.
 
 This project is not designed as a central SaaS bot.
 # cad-bot
