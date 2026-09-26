@@ -1,6 +1,6 @@
 {
   "name": "cad-discord",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -12,7 +12,9 @@
     "bin/",
     "README.md",
     ".env.example",
-    "package.json"
+    "package.json",
+    "wrangler.jsonc",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc",

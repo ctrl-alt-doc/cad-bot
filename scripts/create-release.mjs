@@ -20,7 +20,9 @@ for (const file of [
     'package.json',
     'package-lock.json',
     '.env.example',
-    'README.md'
+    'README.md',
+    'wrangler.jsonc',
+    'CHANGELOG.md'
 ]) {
     await cp(join(projectRoot, file), join(releaseRoot, file));
 }

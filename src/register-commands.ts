@@ -41,6 +41,29 @@ const commands = [
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
+                .addStringOption((option) =>
+                    option
+                        .setName('header')
+                        .setDescription('A heading within the documentation page')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+        )
+        .addSubcommandGroup((group) =>
+            group
+                .setName('settings')
+                .setDescription('Configure this server’s documentation bot')
+                .addSubcommand((subcommand) =>
+                    subcommand
+                        .setName('colour')
+                        .setDescription('Set the embed colour for this server')
+                        .addStringOption((option) =>
+                            option
+                                .setName('hex')
+                                .setDescription('Six-digit hex colour, for example #ce0985')
+                                .setRequired(true)
+                        )
+                )
         )
 ].map((command) => command.toJSON());
 

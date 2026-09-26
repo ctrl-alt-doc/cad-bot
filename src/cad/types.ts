@@ -16,6 +16,14 @@ export interface PageResult {
     section?: string;
     breadcrumb?: string[];
     sinceVersion?: string;
+    toc?: TocItem[];
+    content?: string;
+}
+
+export interface TocItem {
+    id: string;
+    title: string;
+    level: number;
 }
 
 export interface ListResult {

@@ -1,9 +1,16 @@
 {
-    "name": "cad-discord",
-    "main": "src/index.ts",
-    "compatibility_date": "2026-09-13",
-    "vars": {
-        "CAD_BASE_URL": "https://docs.ctrlaltdoc.cc",
-        "DISCORD_CLIENT_ID": "1551648923544846448"
-    }
+	"name": "cad-discord",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-13",
+	"vars": {
+		"CAD_BASE_URL": "https://docs.ctrlaltdoc.cc",
+		"DISCORD_CLIENT_ID": "1551648923544846448"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "BRAND_SETTINGS",
+			"id": "45c56348afd94a8797500dbe274282fb",
+			"remote": true
+		}
+	]
 }

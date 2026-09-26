@@ -18,14 +18,72 @@ CAD remains responsible for finding documents, resolving slugs, and maintaining 
 
 ```text
 /docs search <query>
-/docs page <slug>
+/docs page <slug> [header]
 ```
 
 `/docs search` uses CAD’s title-priority search. A single result is returned directly; multiple results include a heading and compact title/link entries. Discord autocomplete suggests page titles while typing.
 
-`/docs page` retrieves page metadata from CAD. Pages may define an optional YAML `excerpt`; pages without one return no excerpt.
+`/docs page` retrieves page metadata from CAD. The optional `header` argument is autocomplete-enabled from the page table of contents. When selected, the embed shows that section's content and its link opens the page at the matching heading. Pages may define an optional YAML `excerpt`; pages without one return no excerpt.
+
+Server administrators can set the embed colour with:
+
+```text
+/docs settings colour hex:#ce0985
+```
+
+The setting is stored per Discord server in Cloudflare KV. Create a KV namespace, bind it as `BRAND_SETTINGS` in `wrangler.jsonc`, then deploy:
+
+```bash
+npx wrangler kv namespace create BRAND_SETTINGS
+```
+
+Copy the returned namespace ID into the `kv_namespaces` binding before running `npx wrangler deploy`. The default colour is `#ce0985`.
 
 Responses use a consistent branded embed with an `Open page` link button. Empty and error states use the same accent colour, and error replies are ephemeral. Set `BRAND_AVATAR_URL` to a stable public avatar URL for the embed footer; otherwise the bot uses `/brand/ctrl-alt-bot-512.png` on the CAD site.
+
+## Self-hosting options
+
+This project is an HTTP Discord interactions Worker. It does not maintain a Discord Gateway login or an online presence. Choose one of these deployment options:
+
+### Deploy from the repository
+
+This is the recommended option for operators who want to track configuration and updates themselves:
+
+```bash
+git clone https://github.com/ctrl-alt-doc/cad-bot.git
+cd cad-bot
+npm ci
+npx wrangler secret put DISCORD_PUBLIC_KEY
+npx wrangler secret put DISCORD_TOKEN
+npx wrangler deploy
+```
+
+Set the deployed Worker URL as the Discord application's Interactions Endpoint URL, then register commands with `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, and an optional `DISCORD_GUILD_ID`.
+
+### Deploy a release archive
+
+Download the archive from GitHub Releases, extract it, and install production dependencies:
+
+```bash
+tar -xzf cad-discord-<version>.tar.gz
+cd cad-discord-<version>
+npm ci --omit=dev
+npx wrangler secret put DISCORD_PUBLIC_KEY
+npx wrangler secret put DISCORD_TOKEN
+npx wrangler deploy
+```
+
+The archive includes the compiled Worker, `wrangler.jsonc`, configuration example, and release notes. `npx wrangler` may download Wrangler if it is not installed globally.
+
+### Test locally with Wrangler
+
+```bash
+npx wrangler dev
+```
+
+Use the local URL for development checks. Discord requires a publicly reachable HTTPS endpoint for a live application, so deploy the Worker or use a suitable tunnel for local interaction testing.
+
+The npm package is a distribution artifact for these Worker deployments and command registration. `npm start` is not a standalone bot server and does not log the bot into Discord.
 
 ## Requirements
 
@@ -72,12 +130,6 @@ Run the automated client and formatter tests:
 npm test
 ```
 
-Run it directly from TypeScript during development:
-
-```bash
-npm run dev
-```
-
 Register the `/docs` command during development:
 
 ```bash
@@ -85,12 +137,6 @@ npm run register:dev
 ```
 
 When `DISCORD_GUILD_ID` is set, the script registers guild commands, which update immediately and are useful during development. When it is omitted, the script registers global commands for a public installation; Discord notes that global command updates can take longer to propagate. Do not omit the guild ID accidentally during local development.
-
-Run compiled output:
-
-```bash
-npm start
-```
 
 ## Create a release tarball
 
@@ -106,21 +152,7 @@ This creates:
 release/cad-discord-<version>.tar.gz
 ```
 
-The archive contains the compiled `dist/` directory, package metadata, `.env.example`, and this README. It does not contain `.env`, `node_modules`, or development tests.
-
-An operator can install it with:
-
-```bash
-tar -xzf cad-discord-<version>.tar.gz
-cd cad-discord-<version>
-npm ci --omit=dev
-cp .env.example .env
-# edit .env
-npm run register
-npm start
-```
-
-The release install uses the compiled registration script, so development dependencies are not required.
+The archive contains the compiled Worker, package metadata, Wrangler configuration, `.env.example`, README, and changelog. It does not contain `.env`, `node_modules`, or development tests.
 
 ## Automated releases
 
@@ -137,7 +169,7 @@ A matching `v<version>` tag runs the release workflow. It creates the GitHub rel
 
 ## Install from npm
 
-The public [`cad-discord` npm package](https://www.npmjs.com/package/cad-discord) is the quickest way to install the bot. GitHub Releases remain available when you want a versioned archive instead.
+The public [`cad-discord` npm package](https://www.npmjs.com/package/cad-discord) contains the same compiled Worker artifacts. For a complete self-hosted deployment, the GitHub release archive is usually easier because it includes `wrangler.jsonc` and the deployment documentation.
 
 ```bash
 npm install --global cad-discord
