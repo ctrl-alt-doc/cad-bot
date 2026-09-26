@@ -1,0 +1,15 @@
+{
+  "name": "cad-discord-your-name",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-13",
+  "vars": {
+    "CAD_BASE_URL": "https://your-docs.example.com",
+  "DISCORD_CLIENT_ID": "YOUR_DISCORD_APPLICATION_ID"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "BRAND_SETTINGS",
+      "id": "REPLACE_WITH_YOUR_BRAND_SETTINGS_NAMESPACE_ID"
+    }
+  ]
+}
