@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.6] - 2026-09-26
+
+### Fixed
+
+- Replaced instance-specific Wrangler deployment values with self-hosting placeholders.
+- Removed the maintainer's Worker name, CAD host, Discord application ID, and KV namespace ID from the distributable configuration.
+
 ## [1.0.5] - 2026-09-26
 
 ### Added

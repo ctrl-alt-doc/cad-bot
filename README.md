@@ -31,23 +31,29 @@ Server administrators can set the embed colour with:
 /docs settings colour hex:#ce0985
 ```
 
-The setting is stored per Discord server in Cloudflare KV. Create a KV namespace, bind it as `BRAND_SETTINGS` in `wrangler.jsonc`, then deploy:
-
-```bash
-npx wrangler kv namespace create BRAND_SETTINGS
-```
-
-Copy the returned namespace ID into the `kv_namespaces` binding before running `npx wrangler deploy`. The default colour is `#ce0985`.
+The setting is stored per Discord server in Cloudflare KV. The default colour is `#ce0985`.
 
 Responses use a consistent branded embed with an `Open page` link button. Empty and error states use the same accent colour, and error replies are ephemeral. Set `BRAND_AVATAR_URL` to a stable public avatar URL for the embed footer; otherwise the bot uses `/brand/ctrl-alt-bot-512.png` on the CAD site.
 
-## Installation and self-hosting
+## Installation
 
-This project is an HTTP Discord interactions Worker. It does not maintain a Discord Gateway login or an online presence. Choose the installation path that matches how you want to operate it:
+This bot runs as a Cloudflare Worker. The simplest supported setup is: create a Discord application, deploy the Worker, connect Discord to its URL, and register the commands.
 
-### Deploy from the repository
+### 1. Create the Discord application
 
-This is the recommended option for operators who want to track configuration and updates themselves:
+In the [Discord Developer Portal](https://discord.com/developers/applications):
+
+1. Create an application and add a bot.
+2. Copy the **Application ID**, **Bot Token**, and **Public Key**.
+3. Invite the bot to your server using the `bot` and `applications.commands` scopes.
+
+Keep the token secret.
+
+### 2. Download the bot
+
+Use either the source repository or a GitHub release archive.
+
+From source:
 
 ```bash
 git clone https://github.com/ctrl-alt-doc/cad-bot.git
@@ -55,94 +61,111 @@ cd cad-bot
 npm ci
 ```
 
-Create the required KV namespace and put its ID in `wrangler.jsonc`:
-
-```bash
-npx wrangler kv namespace create BRAND_SETTINGS
-```
-
-Then authenticate Wrangler, set the Worker secrets, and deploy:
-
-```bash
-npx wrangler login
-npx wrangler secret put DISCORD_PUBLIC_KEY
-npx wrangler secret put DISCORD_TOKEN
-npx wrangler deploy
-```
-
-Set the deployed Worker URL as the Discord application's Interactions Endpoint URL, then register commands with `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, and an optional `DISCORD_GUILD_ID`.
-
-### Discord application setup
-
-Create a Discord application and bot in the [Discord Developer Portal](https://discord.com/developers/applications). Record the application ID, bot token, and public key. Invite the bot to a test server with the `bot` and `applications.commands` scopes.
-
-Set the Interactions Endpoint URL only after the Worker has been deployed. Discord validates the endpoint with the public key.
-
-Register commands from the repository checkout:
-
-```bash
-DISCORD_TOKEN="your-bot-token" \
-DISCORD_CLIENT_ID="your-application-id" \
-DISCORD_GUILD_ID="your-test-server-id" \
-npx tsx src/register-commands.ts
-```
-
-Use `DISCORD_GUILD_ID` during development so command changes appear quickly. Omit it for global commands; global propagation can take longer.
-
-### Deploy a release archive
-
-Download the archive from GitHub Releases, extract it, and install production dependencies:
+From a release archive:
 
 ```bash
 tar -xzf cad-discord-<version>.tar.gz
 cd cad-discord-<version>
 npm ci --omit=dev
+```
+
+### 3. Log in to Cloudflare
+
+```bash
+npx wrangler login
+```
+
+### 4. Create the colour-settings database
+
+Run this once:
+
+```bash
+npx wrangler kv namespace create BRAND_SETTINGS
+```
+
+Copy the returned ID into `wrangler.jsonc`, replacing:
+
+```text
+REPLACE_WITH_BRAND_SETTINGS_NAMESPACE_ID
+```
+
+Before deploying, edit the same file and replace these example values with your own:
+
+```jsonc
+"name": "cad-discord-your-name",
+"CAD_BASE_URL": "https://your-docs.example.com",
+"DISCORD_CLIENT_ID": "YOUR_DISCORD_APPLICATION_ID"
+```
+
+### 5. Add the Discord secrets
+
+Run each command and paste the requested value:
+
+```bash
 npx wrangler secret put DISCORD_PUBLIC_KEY
 npx wrangler secret put DISCORD_TOKEN
+```
+
+### 6. Deploy
+
+```bash
 npx wrangler deploy
 ```
 
-The archive includes the compiled Worker, `wrangler.jsonc`, configuration example, and release notes. `npx wrangler` may download Wrangler if it is not installed globally. Create the KV namespace and replace its placeholder ID in `wrangler.jsonc` before deploying.
+Copy the Worker URL printed by Wrangler.
 
-### Test locally with Wrangler
+### 7. Connect Discord to the Worker
+
+In the Discord Developer Portal, open **General Information** and set **Interactions Endpoint URL** to the Worker URL.
+
+Discord should verify the endpoint.
+
+### 8. Register slash commands
+
+From a source checkout, create a `.env` file:
+
+```text
+DISCORD_TOKEN=your-bot-token
+DISCORD_CLIENT_ID=your-application-id
+DISCORD_GUILD_ID=your-test-server-id
+```
+
+Then run:
+
+```bash
+npx tsx src/register-commands.ts
+```
+
+`DISCORD_GUILD_ID` is recommended while testing because commands update immediately. Omit it when registering global commands for public use.
+
+### Test locally
 
 ```bash
 npx wrangler dev
 ```
 
-Use the local URL for development checks. Discord requires a publicly reachable HTTPS endpoint for a live application, so deploy the Worker or use a suitable tunnel for local interaction testing.
-
-The npm package is a distribution artifact for these Worker deployments and command registration. `npm start` is not a standalone bot server and does not log the bot into Discord.
-
-### Install from npm
-
-The npm package is useful when you want the compiled Worker artifacts or the command-registration script. It is not, by itself, a complete deployment directory:
+Discord requires a public HTTPS URL for live interactions. Use a tunnel for local testing or deploy a separate test Worker with:
 
 ```bash
-npm install --global cad-discord
-mkdir cad-discord-config
-cd cad-discord-config
-cp "$(npm root --global)/cad-discord/.env.example" .env
+npx wrangler deploy --name cad-discord-test
 ```
 
-For a Worker deployment, use the GitHub release archive instead because it includes the Wrangler configuration. For command registration from an npm installation, fill in `.env` and run:
+The npm package is a distribution artifact and is not a standalone bot server. Do not use `npm start` to run the production bot.
+
+### Other package managers
+
+npm is the documented and tested package manager:
 
 ```bash
-cad-discord-register
+npm ci
 ```
 
-The `cad-discord` executable is not a standalone server and should not be used as a replacement for `wrangler deploy`.
-
-### Local development
-
-Install dependencies and run the Worker locally:
+pnpm, Yarn, and Bun may install the project dependencies, but npm remains the release source of truth. If npm warns that `esbuild` or `workerd` install scripts need approval, run:
 
 ```bash
-npm install
-npx wrangler dev
+npm approve-scripts esbuild workerd
+npm rebuild esbuild workerd
 ```
-
-Use `npm run build` for a production TypeScript build and `npm test` for the test suite. Discord requires a public HTTPS endpoint for live interaction testing; use a tunnel or deploy a test Worker.
 
 ## Requirements
 
@@ -151,27 +174,6 @@ Use `npm run build` for a production TypeScript build and `npm test` for the tes
 - A CAD documentation site exposing the bot API endpoints
 - A Cloudflare account for Worker deployment
 - A Cloudflare KV namespace bound as `BRAND_SETTINGS`
-
-### Supported package managers
-
-The repository includes npm metadata and is tested with npm:
-
-```bash
-npm ci
-```
-
-Other Node package managers can install the dependencies, but their lockfiles are not the release source of truth. If using pnpm, Yarn, or Bun, install the equivalent Wrangler and TypeScript dependencies, then use the same `wrangler` commands. npm remains the recommended and documented path.
-
-### Install scripts and npm approvals
-
-Newer npm versions may warn that install scripts for `esbuild` and `workerd` are pending approval. Those scripts prepare binaries used by Wrangler. Review and approve them, then rebuild:
-
-```bash
-npm approve-scripts esbuild workerd
-npm rebuild esbuild workerd
-```
-
-If your npm version does not support package-specific approval, use the review command npm prints and then run `npm rebuild`.
 
 ### CI/CD deployment
 
