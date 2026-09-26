@@ -1,16 +1,18 @@
 {
-	"name": "cad-discord",
+	"name": "casterlabs-cad",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-09-13",
 	"vars": {
-		"CAD_BASE_URL": "https://docs.ctrlaltdoc.cc",
-		"DISCORD_CLIENT_ID": "1551648923544846448"
+		"CAD_BASE_URL": "https://cadsterlabs.pages.dev",
+		"DISCORD_CLIENT_ID": "1553425089985519836"
 	},
 	"kv_namespaces": [
-		{
-			"binding": "BRAND_SETTINGS",
-			"id": "45c56348afd94a8797500dbe274282fb",
-			"remote": true
-		}
-	]
+    {
+      "binding": "KV",
+      "id": "747c8ba68efb4931919bcbe5c8d5a018",
+      
+      // Optional: preview_id used when running `wrangler dev` for local dev
+      "preview_id": "<ID_OF_PREVIEW_KV_NAMESPACE_FOR_LOCAL_DEVELOPMENT>"
+    }
+  ]
 }
