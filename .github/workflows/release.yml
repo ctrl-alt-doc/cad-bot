@@ -50,7 +50,13 @@ jobs:
       - name: Publish package to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if npm view "cad-discord@$PACKAGE_VERSION" version >/dev/null 2>&1; then
+            echo "cad-discord@$PACKAGE_VERSION is already published; skipping npm publish."
+          else
+            npm publish --access public
+          fi
 
       - name: Create GitHub release
         env:
