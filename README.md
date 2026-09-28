@@ -1,7 +1,6 @@
 # ctrl alt doc — Discord bot
 
-This is the Discord companion for [ctrl alt doc](https://github.com/
-/ctrl-alt-doc). It provides a small Discord interface to a configured CAD documentation site.
+This is the Discord companion for [ctrl alt doc](https://github.com//ctrl-alt-doc). It provides a small Discord interface to a configured CAD documentation site.
 
 [Download the latest release](https://github.com/ctrl-alt-doc/cad-bot/releases/latest)
 
