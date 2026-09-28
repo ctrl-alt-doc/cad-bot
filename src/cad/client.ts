@@ -8,95 +8,46 @@ import type {
 const CAD_REQUEST_TIMEOUT_MS = 10_000;
 
 export class CadClient {
-    constructor(private readonly baseUrl: string) {}
+    constructor(
+        private readonly baseUrl: string,
+        private readonly timeoutMs = CAD_REQUEST_TIMEOUT_MS
+    ) {}
 
-    async search(query: string): Promise<SearchResult[]> {
-        const url = new URL('/api/search', this.baseUrl);
-        url.searchParams.set('q', query);
-
-        let response: Response;
-
-        try {
-            response = await fetch(url, {
-                signal: AbortSignal.timeout(CAD_REQUEST_TIMEOUT_MS)
-            });
-        } catch {
-            throw new Error('CAD_UNREACHABLE');
-        }
-
-        if (!response.ok) {
-            throw new Error(`CAD_HTTP_${response.status}`);
-        }
-
-        try {
-            return await response.json() as SearchResult[];
-        } catch {
-            throw new Error('CAD_INVALID_RESPONSE');
-        }
+    search(query: string): Promise<SearchResult[]> {
+        return this.request('/api/search', { q: query });
     }
 
-    async getPage(slug: string): Promise<PageResult> {
-        const url = new URL('/api/page', this.baseUrl);
-        url.searchParams.set('slug', slug);
-
-        let response: Response;
-
-        try {
-            response = await fetch(url, {
-                signal: AbortSignal.timeout(CAD_REQUEST_TIMEOUT_MS)
-            });
-        } catch {
-            throw new Error('CAD_UNREACHABLE');
-        }
-
-        if (!response.ok) {
-            throw new Error(`CAD_HTTP_${response.status}`);
-        }
-
-        try {
-            return await response.json() as PageResult;
-        } catch {
-            throw new Error('CAD_INVALID_RESPONSE');
-        }
+    getPage(slug: string): Promise<PageResult> {
+        return this.request('/api/page', { slug });
     }
 
-    async listPages(category: string): Promise<PageListResult> {
-        const url = new URL('/api/list', this.baseUrl);
-        url.searchParams.set('category', category);
-        let response: Response;
-
-        try {
-            response = await fetch(url, {
-                signal: AbortSignal.timeout(CAD_REQUEST_TIMEOUT_MS)
-            });
-        } catch {
-            throw new Error('CAD_UNREACHABLE');
-        }
-
-        if (!response.ok) {
-            throw new Error(`CAD_HTTP_${response.status}`);
-        }
-
-        try {
-            return await response.json() as PageListResult;
-        } catch {
-            throw new Error('CAD_INVALID_RESPONSE');
-        }
+    listPages(category: string): Promise<PageListResult> {
+        return this.request('/api/list', { category });
     }
 
-    async suggest(query: string, kind: 'page' | 'category'): Promise<SuggestionResult[]> {
-        const url = new URL('/api/suggest', this.baseUrl);
-        url.searchParams.set('q', query);
-        url.searchParams.set('kind', kind);
+    suggest(query: string, kind: 'page' | 'category'): Promise<SuggestionResult[]> {
+        return this.request('/api/suggest', { q: query, kind });
+    }
+
+    private async request<T>(path: string, params: Record<string, string>): Promise<T> {
+        const url = new URL(path, this.baseUrl);
+
+        for (const [name, value] of Object.entries(params)) {
+            url.searchParams.set(name, value);
+        }
 
         let response: Response;
 
         try {
             response = await fetch(url, {
-                signal: AbortSignal.timeout(CAD_REQUEST_TIMEOUT_MS)
+                signal: AbortSignal.timeout(this.timeoutMs)
             });
         } catch {
             throw new Error('CAD_UNREACHABLE');
+        }
+
+        if (response.status === 404) {
+            throw new Error('CAD_NOT_FOUND');
         }
 
         if (!response.ok) {
@@ -104,7 +55,7 @@ export class CadClient {
         }
 
         try {
-            return await response.json() as SuggestionResult[];
+            return await response.json() as T;
         } catch {
             throw new Error('CAD_INVALID_RESPONSE');
         }

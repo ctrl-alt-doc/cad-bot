@@ -1,0 +1,2 @@
+DISCORD_PUBLIC_KEY= # Discord Developer Portal → your application → General Information → Public Key
+DISCORD_TOKEN= # Discord Developer Portal → your application → Bot → Reset Token

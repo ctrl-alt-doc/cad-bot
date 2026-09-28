@@ -1,38 +1,48 @@
 {
-  "name": "cad-discord",
-  "version": "1.0.6",
-  "description": "",
+  "name": "ctrlaltbot",
+  "version": "1.1.0",
+  "description": "Discord bot for ctrl alt doc documentation sites, running as a Cloudflare Worker.",
+  "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./commands": {
+      "types": "./dist/commands.d.ts",
+      "import": "./dist/commands.js"
+    }
+  },
   "bin": {
-    "cad-discord": "bin/cad-discord.mjs",
-    "cad-discord-register": "bin/cad-discord-register.mjs"
+    "ctrlaltbot-register": "bin/ctrlaltbot-register.mjs"
   },
   "files": [
     "dist/",
     "bin/",
     "README.md",
-    ".env.example",
-    "package.json",
-    "wrangler.jsonc",
     "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc",
     "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "release": "npm run build && npm test && node scripts/create-release.mjs",
-    "dev": "tsx src/index.ts",
+    "dev": "wrangler dev",
     "register": "node dist/register-commands.js",
-    "register:dev": "tsx src/register-commands.ts",
-    "start": "node dist/index.js"
+    "register:dev": "tsx src/register-commands.ts"
   },
-  "keywords": [],
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "cloudflare-workers",
+    "documentation",
+    "ctrl-alt-doc"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
-    "discord-interactions": "^4.4.0",
-    "discord.js": "^14.27.0",
-    "dotenv": "^17.4.2"
+    "discord-interactions": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.2",

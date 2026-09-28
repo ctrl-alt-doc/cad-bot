@@ -1,20 +1,18 @@
-// Development configuration for working on the bot itself.
-// To run your own bot, use the template in `template/` instead.
 {
-  "name": "ctrlaltbot-dev",
-  "main": "src/index.ts",
+  "name": "ctrlaltbot",
+  "main": "src/index.js",
   "compatibility_date": "2026-09-13",
   "vars": {
     "CAD_BASE_URL": "https://your-docs.example.com",
     "DISCORD_CLIENT_ID": "YOUR_DISCORD_APPLICATION_ID"
   },
-  // Created automatically on first deploy.
+  // Stores per-server settings. Created automatically on first deploy.
   "kv_namespaces": [
     {
       "binding": "BRAND_SETTINGS"
     }
   ],
-  // Re-registers slash commands hourly if their definitions have changed.
+  // Keeps the slash commands up to date after each update.
   "triggers": {
     "crons": ["0 * * * *"]
   },

@@ -11,7 +11,7 @@ const packageJson = JSON.parse(
 const archiveName = `${packageJson.name}-${packageJson.version}.tar.gz`;
 const releaseDirectory = join(projectRoot, 'release');
 const archivePath = join(releaseDirectory, archiveName);
-const stagingRoot = await mkdtemp(join(tmpdir(), 'cad-discord-release-'));
+const stagingRoot = await mkdtemp(join(tmpdir(), `${packageJson.name}-release-`));
 const releaseRoot = join(stagingRoot, `${packageJson.name}-${packageJson.version}`);
 
 await mkdir(releaseRoot, { recursive: true });
