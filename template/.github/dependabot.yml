@@ -1,0 +1,12 @@
+# Opens a pull request when a new version of the bot is published.
+# Merging it redeploys the bot through Workers Builds.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+    allow:
+      - dependency-name: ctrlaltbot
+    commit-message:
+      prefix: ctrlaltbot

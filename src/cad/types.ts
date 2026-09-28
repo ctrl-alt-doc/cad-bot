@@ -6,6 +6,12 @@ export interface SearchResult {
     section?: string;
     breadcrumb?: string[];
     sinceVersion?: string;
+    heading?: SearchResultHeading;
+}
+
+export interface SearchResultHeading {
+    id: string;
+    title: string;
 }
 
 export interface PageResult {
@@ -17,7 +23,10 @@ export interface PageResult {
     breadcrumb?: string[];
     sinceVersion?: string;
     toc?: TocItem[];
+    /** Rendered HTML. */
     content?: string;
+    /** Markdown source, preferred for section text when CAD provides it. */
+    markdown?: string;
 }
 
 export interface TocItem {
