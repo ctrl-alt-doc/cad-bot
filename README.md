@@ -113,7 +113,9 @@ The bot checks its command definitions when a Worker instance handles its first 
 
 ## CAD requirements
 
-The configured CAD site must be running and reachable by the Worker. The bot expects these endpoints:
+The configured CAD site must be running and reachable by the Worker. If the docs site is also a Cloudflare Worker in the same account, the bot needs the `global_fetch_strictly_public` compatibility flag, which the template includes; without it Cloudflare blocks the request with error 1042, which the bot logs as `CAD_BLOCKED`.
+
+The bot expects these endpoints:
 
 ```text
 GET /api/search?q=<query>

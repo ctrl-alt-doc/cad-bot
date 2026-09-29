@@ -7,6 +7,13 @@ import type {
 
 const CAD_REQUEST_TIMEOUT_MS = 10_000;
 
+/** A readable summary of a CAD request failure for logs, including the request URL. */
+export function describeCadError(error: unknown): string {
+    if (!(error instanceof Error)) return String(error);
+
+    return error.cause ? `${error.message} (${String(error.cause)})` : error.message;
+}
+
 export class CadClient {
     constructor(
         private readonly baseUrl: string,
@@ -42,21 +49,27 @@ export class CadClient {
             response = await fetch(url, {
                 signal: AbortSignal.timeout(this.timeoutMs)
             });
-        } catch {
-            throw new Error('CAD_UNREACHABLE');
-        }
-
-        if (response.status === 404) {
-            throw new Error('CAD_NOT_FOUND');
+        } catch (error) {
+            throw new Error('CAD_UNREACHABLE', { cause: `${url}: ${error instanceof Error ? error.message : String(error)}` });
         }
 
         if (!response.ok) {
-            throw new Error(`CAD_HTTP_${response.status}`);
+            const body = await response.text().catch(() => '');
+
+            // Cloudflare answers with a 404 when a Worker fetches another Worker in the same account without the flag.
+            if (body.includes('error code: 1042')) {
+                throw new Error('CAD_BLOCKED', {
+                    cause: `${url}: Cloudflare error 1042. The docs site is a Worker in the same account; add the "global_fetch_strictly_public" compatibility flag to the bot's wrangler.jsonc.`
+                });
+            }
+
+            throw new Error(response.status === 404 ? 'CAD_NOT_FOUND' : `CAD_HTTP_${response.status}`, { cause: `${url}: HTTP ${response.status}` });
         }
 
         try {
             return await response.json() as T;
         } catch {
+            throw new Error('CAD_INVALID_RESPONSE', { cause: `${url}: response was not JSON` });
             throw new Error('CAD_INVALID_RESPONSE');
         }
     }

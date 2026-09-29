@@ -7,10 +7,17 @@ const HTML_ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot
 // Matches CAD's table-of-contents titles, which drop inline Markdown.
 const plain = (value: string) => value.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_`~]/g, '').trim().toLowerCase();
 
-/** The text of one section of a page, formatted for a Discord embed. */
+// Rendered pages always contain heading tags with the anchor IDs the table of contents refers to.
+const isHtml = (content: string) => /<h[1-6]\b[^>]*\bid=/i.test(content);
+
+/**
+ * The text of one section of a page, formatted for a Discord embed. CAD sites
+ * send Markdown as `markdown`; some send it as `content`, where others send HTML.
+ */
 export function sectionText(page: PageResult, selected: TocItem): string | undefined {
-    const text = page.markdown !== undefined
-        ? fromMarkdown(page.markdown, page.toc ?? [], selected)
+    const markdown = page.markdown ?? (page.content && !isHtml(page.content) ? page.content : undefined);
+    const text = markdown !== undefined
+        ? fromMarkdown(markdown, page.toc ?? [], selected)
         : page.content ? fromHtml(page.content, selected) : undefined;
 
     return text ? truncateMarkdown(text, MAX_SECTION_LENGTH) : undefined;

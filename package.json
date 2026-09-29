@@ -1,6 +1,6 @@
 {
   "name": "ctrlaltbot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Discord bot for ctrl alt doc documentation sites, running as a Cloudflare Worker.",
   "type": "module",
   "main": "dist/index.js",

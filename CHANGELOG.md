@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.1] - 2026-09-29
+
+### Fixed
+
+- Section text works again with docs sites that send Markdown in the page API's `content` field rather than as `markdown`. In 1.1.0 these sites showed "Open the page to read this section."
+- The template enables the `global_fetch_strictly_public` compatibility flag, so the bot can reach a docs site hosted as a Worker in the same Cloudflare account. Without it, Cloudflare blocks the request with error 1042 and every search fails. Existing deployments need to add the flag to their `wrangler.jsonc`.
+- CAD failures are logged with the error code, request URL, and HTTP status instead of only a stack trace, and Cloudflare's same-account block is reported as `CAD_BLOCKED` with instructions rather than as a missing page.
+
 ## [1.1.0] - 2026-09-29
 
 ### Changed
