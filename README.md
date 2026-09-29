@@ -1,4 +1,6 @@
-# ctrlaltbot
+![GitHub-Mark-Light](https://github.com/SENPIEMAN/ctrlaltbot/blob/54eb196c4f5cfb93faa6d2c169cdd0408c6a5363/wordmark-on-light-1600.png#gh-light-mode-only)
+![GitHub-Mark-Dark ](https://github.com/SENPIEMAN/ctrlaltbot/blob/54eb196c4f5cfb93faa6d2c169cdd0408c6a5363/wordmark-on-dark-1600.png#gh-dark-mode-only)
+
 
 The Discord companion for [ctrl alt doc](https://github.com/ctrl-alt-doc/ctrlaltdoc). It lets people search and read a ctrl alt doc documentation site without leaving Discord.
 
