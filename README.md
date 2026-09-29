@@ -1,7 +1,7 @@
 <p align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/simongrieve/images/blob/fe8c7d57ecf1859b71f6db1ef5ed242733a4bf8b/mark-on-dark-256.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/simongrieve/images/blob/fe8c7d57ecf1859b71f6db1ef5ed242733a4bf8b/mark-on-light-256.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/simongrieve/images/blob/d934c2fc1b4c36fc66e5afb2e3082e5546ccb43b/mark-dark-mode-128.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/simongrieve/images/blob/d934c2fc1b4c36fc66e5afb2e3082e5546ccb43b/mark-light-mode-128.png">
   <img alt="Fallback image description" src="default-image.png">
 </picture>
 </p>
