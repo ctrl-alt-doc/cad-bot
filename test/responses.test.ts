@@ -59,6 +59,14 @@ test('omits the menu for a single result and skips values Discord would reject',
     assert.equal(select(formatSearchResults([results[1]!, longSlug], baseUrl, 'pasta', brand) as Message), undefined);
 });
 
+test('leaves the home page out of the menu, since Discord rejects empty option values', () => {
+    const home = { title: 'Home', description: 'Welcome.', slug: '', excerpt: '' };
+    const options = select(formatSearchResults([...results, home], baseUrl, 'cooking', brand) as Message)?.options ?? [];
+
+    assert.deepEqual(options.map((option) => option.value), ['cooking/eggs#boiling-an-egg', 'cooking/pasta']);
+    assert.ok(options.every((option) => option.value.length > 0 && option.value.length <= 100));
+});
+
 test('moves the selection when another result is chosen', () => {
     const original = formatSearchResults(results, baseUrl, 'cooking', brand) as Message;
     const updated = formatSelectedResult(eggsPage, baseUrl, brand, 'cooking/eggs#frying', original.components) as Message;

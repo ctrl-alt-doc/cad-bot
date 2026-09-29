@@ -135,7 +135,8 @@ function searchResultSelect(results: SearchResult[], selectedValue: string): Sel
 
     for (const result of results) {
         const value = resultValue(result.slug, result.heading?.id);
-        if (value.length > MAX_CHOICE_LENGTH || seen.has(value)) continue;
+        // The home page has an empty slug, and Discord rejects the whole reply if any option value is empty.
+        if (!result.slug || value.length > MAX_CHOICE_LENGTH || seen.has(value)) continue;
         seen.add(value);
 
         const option: SelectOption = { label: truncate(resultTitle(result), MAX_CHOICE_LENGTH), value, default: value === selectedValue };
