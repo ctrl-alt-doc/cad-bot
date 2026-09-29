@@ -101,17 +101,59 @@ function fromHtml(html: string, selected: TocItem): string | undefined {
     const rest = html.slice(headingEnd + closingTag.length);
     const next = rest.search(new RegExp(`<h[1-${selected.level}]\\b`, 'i'));
 
-    return (next < 0 ? rest : rest.slice(0, next))
+    return htmlToDiscord(next < 0 ? rest : rest.slice(0, next));
+}
+
+// Stand-ins for Markdown the converter adds itself, so escaping the page's own
+// text doesn't touch them. Private-use characters never appear in page text.
+const BOLD = '';
+const BULLET = '';
+const CODE_BLOCK = '';
+
+const decodeEntities = (text: string) => text.replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (entity, name: string) => {
+    if (name[0] === '#') {
+        const code = name[1] === 'x' || name[1] === 'X' ? Number.parseInt(name.slice(2), 16) : Number.parseInt(name.slice(1), 10);
+        return Number.isFinite(code) ? String.fromCodePoint(code) : entity;
+    }
+    return HTML_ENTITIES[name.toLowerCase()] ?? entity;
+});
+
+const stripTags = (html: string) => html.replace(/<[^>]+>/g, '');
+
+const inlineText = (html: string) => decodeEntities(stripTags(html)).replace(/\s+/g, ' ').trim();
+
+/** Converts rendered CAD HTML to Discord Markdown, escaping anything in the text that Discord would treat as formatting. */
+function htmlToDiscord(html: string): string {
+    const codeBlocks: string[] = [];
+
+    const text = html
         .replace(/<(svg|button|script|style)\b[\s\S]*?<\/\1>/gi, '')
+        // Heading permalinks render as a "#" that Discord would read as heading syntax.
+        .replace(/<a\b[^>]*\bclass="[^"]*\bheading-anchor\b[^"]*"[^>]*>[\s\S]*?<\/a>/gi, '')
         .replace(/<span class="code-language">[\s\S]*?<\/span>/gi, '')
-        .replace(/<\/(p|div|li|pre|tr|h\d)>|<br\s*\/?>/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&(#?\w+);/g, (entity, name: string) => HTML_ENTITIES[name] ?? entity)
+        .replace(/<pre\b[^>]*>([\s\S]*?)<\/pre>/gi, (_, code: string) => {
+            // Drop template whitespace around <code>, keeping the code's own indentation.
+            codeBlocks.push(decodeEntities(stripTags(code.replace(/^\s*(?=<code\b)/i, ''))).replace(/^\n+|\s+$/g, ''));
+            return `\n${CODE_BLOCK}${codeBlocks.length - 1}${CODE_BLOCK}\n`;
+        })
+        .replace(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi, (_, inner: string) => `\n\n${BOLD}${inlineText(inner)}${BOLD}\n`)
+        .replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (_, inner: string) => `\`${inlineText(inner).replace(/`/g, 'ˋ')}\``)
+        .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, _tag: string, inner: string) => `${BOLD}${inlineText(inner)}${BOLD}`)
+        .replace(/<li\b[^>]*>/gi, `\n${BULLET}`)
+        // Each <li> already starts a new line, so closing one doesn't add another.
+        .replace(/<\/(p|div|ul|ol|tr|blockquote)>|<br\s*\/?>/gi, '\n');
+
+    return decodeEntities(stripTags(text))
         .split('\n')
         .map((line) => line.replace(/\s+/g, ' ').trim())
+        // Escape line starts that Discord renders as headings, quotes, or lists.
+        .map((line) => line.replace(/^(#|>|-|\+|\*\s|\d+[.)]\s)/, '\\$1'))
         .join('\n')
         .replace(/\n{3,}/g, '\n\n')
-        .trim();
+        .trim()
+        .replaceAll(BOLD, '**')
+        .replaceAll(BULLET, '- ')
+        .replace(new RegExp(`${CODE_BLOCK}(\\d+)${CODE_BLOCK}`, 'g'), (_, index: string) => `\`\`\`\n${codeBlocks[Number(index)]}\n\`\`\``);
 }
 
 /** Truncates without leaving a code block open, which would break the rest of the embed. */
