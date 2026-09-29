@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.2] - 2026-09-29
+
+### Fixed
+
+- Section text from docs sites that only send rendered HTML showed headings as plain text and the paragraph after each heading as a large heading, because each heading's "#" permalink was left in the text. Headings now appear in bold, code blocks as code blocks, and inline code, bold text, and lists are kept; other text that Discord would treat as formatting is escaped.
+
 ## [1.1.1] - 2026-09-29
 
 ### Fixed

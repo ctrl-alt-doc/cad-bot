@@ -92,6 +92,36 @@ test('reads Markdown sent as content by sites that predate the markdown field', 
     assert.equal(sectionText(page({ content: markdown }), toc[3]!), 'First notes.');
 });
 
+test('converts rendered HTML without leaking heading permalinks as Markdown', () => {
+    const anchor = (id: string) => `\n\t\t\t\t<a\n\t\t\t\t\tclass="heading-anchor"\n\t\t\t\t\thref="#${id}"\n\t\t\t\t>\n\t\t\t\t\t#\n\t\t\t\t</a>\n\t\t`;
+    const content = [
+        `<h2 id="boiling">\n\t\t\tBoiling${anchor('boiling')}</h2>`,
+        '\t<p>Place the egg in <strong>boiling</strong> water &amp; wait. Use <code>boil()</code>.</p>',
+        `<h3 id="timing">\n\t\t\tTiming${anchor('timing')}</h3>`,
+        '\t<p>- not a list, # not a heading</p>',
+        '<ul><li>Six minutes</li><li>Seven if large</li></ul>',
+        '<div class="code-block"><span class="code-language">sh</span><button>Copy</button><pre class="shiki">\n\t\t\t<code><span class="line"># set a timer</span>\n<span class="line">sleep 360</span></code></pre></div>',
+        `<h2 id="frying">\n\t\t\tFrying${anchor('frying')}</h2>`,
+        '<p>Heat the pan.</p>'
+    ].join('\n');
+
+    assert.equal(sectionText(page({ content }), toc[0]!), [
+        'Place the egg in **boiling** water & wait. Use `boil()`.',
+        '',
+        '**Timing**',
+        '',
+        '\\- not a list, # not a heading',
+        '',
+        '- Six minutes',
+        '- Seven if large',
+        '',
+        '```',
+        '# set a timer',
+        'sleep 360',
+        '```'
+    ].join('\n'));
+});
+
 test('returns nothing for a heading that is not on the page', () => {
     assert.equal(sectionText(page({ markdown }), { id: 'missing', title: 'Missing', level: 2 }), undefined);
 });
