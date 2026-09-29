@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.3] - 2026-09-29
+
+### Fixed
+
+- `/ask` and `/docs search` failed with "didn't respond in time" whenever a docs site's home page was among the results: its empty slug made an empty menu option, and Discord rejects the whole reply for that. The home page is now left out of the results menu.
+
+### Changed
+
+- `/docs page` with text that isn't a page slug, such as `tiktok`, now searches for that text instead of replying "Page not found".
+
 ## [1.1.2] - 2026-09-29
 
 ### Fixed

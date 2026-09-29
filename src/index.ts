@@ -133,9 +133,14 @@ async function pageMessage(slug: string, header: string | undefined, env: Env, b
 
         return formatPageResult(page, env.CAD_BASE_URL, brand, header);
     } catch (error) {
+        // Text typed instead of a suggestion, such as "tiktok", is more useful as a search than as an error.
+        if (error instanceof Error && error.message === 'CAD_NOT_FOUND') {
+            return searchMessage(slug, env, brand);
+        }
+
         console.error('CAD page failed:', describeCadError(error));
 
-        return cadErrorMessage(error, brand, `There’s no page at \`${slug}\`. Pick one of the suggestions while typing, or try \`/ask\`.`);
+        return cadErrorMessage(error, brand);
     }
 }
 
