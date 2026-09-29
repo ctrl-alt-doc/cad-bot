@@ -88,6 +88,10 @@ test('falls back to rendered HTML when CAD sends no Markdown', () => {
     assert.ok(!text.includes('Copy') && !text.includes('ts\n'));
 });
 
+test('reads Markdown sent as content by sites that predate the markdown field', () => {
+    assert.equal(sectionText(page({ content: markdown }), toc[3]!), 'First notes.');
+});
+
 test('returns nothing for a heading that is not on the page', () => {
     assert.equal(sectionText(page({ markdown }), { id: 'missing', title: 'Missing', level: 2 }), undefined);
 });

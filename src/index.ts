@@ -1,5 +1,5 @@
 import { verifyKey } from 'discord-interactions';
-import { CadClient } from './cad/client.js';
+import { CadClient, describeCadError } from './cad/client.js';
 import type { PageResult } from './cad/types.js';
 import {
     formatPageResult,
@@ -114,14 +114,14 @@ async function searchMessage(query: string, env: Env, brand: BrandConfig): Promi
         // A matched heading shows that section's text, which needs the full page.
         const topPage = top?.heading
             ? await cadClient.getPage(top.slug).catch((error: unknown) => {
-                console.error('CAD page for search result failed:', error);
+                console.error('CAD page for search result failed:', describeCadError(error));
                 return undefined;
             })
             : undefined;
 
         return formatSearchResults(results, env.CAD_BASE_URL, query, brand, topPage);
     } catch (error) {
-        console.error('CAD search failed:', error);
+        console.error('CAD search failed:', describeCadError(error));
 
         return cadErrorMessage(error, brand);
     }
@@ -133,7 +133,7 @@ async function pageMessage(slug: string, header: string | undefined, env: Env, b
 
         return formatPageResult(page, env.CAD_BASE_URL, brand, header);
     } catch (error) {
-        console.error('CAD page failed:', error);
+        console.error('CAD page failed:', describeCadError(error));
 
         return cadErrorMessage(error, brand, `There’s no page at \`${slug}\`. Pick one of the suggestions while typing, or try \`/ask\`.`);
     }
@@ -212,7 +212,7 @@ async function componentMessage(interaction: Interaction, env: Env): Promise<Mes
     try {
         page = await new CadClient(env.CAD_BASE_URL).getPage(slug);
     } catch (error) {
-        console.error('CAD page for search result failed:', error);
+        console.error('CAD page for search result failed:', describeCadError(error));
 
         return cadErrorMessage(error, brand, 'That page has been moved or removed. Try searching again.');
     }
@@ -253,7 +253,7 @@ async function autocompleteResponse(interaction: Interaction, env: Env): Promise
             choices = queryChoices(query, suggestions.map((suggestion) => suggestion.title));
         }
     } catch (error) {
-        console.error('CAD autocomplete failed:', error);
+        console.error('CAD autocomplete failed:', describeCadError(error));
         choices = isQuery ? queryChoices(query, []) : [];
     }
 

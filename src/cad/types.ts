@@ -23,7 +23,7 @@ export interface PageResult {
     breadcrumb?: string[];
     sinceVersion?: string;
     toc?: TocItem[];
-    /** Rendered HTML. */
+    /** Rendered HTML, or Markdown on some older sites. */
     content?: string;
     /** Markdown source, preferred for section text when CAD provides it. */
     markdown?: string;
