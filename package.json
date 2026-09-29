@@ -2,6 +2,12 @@
   "name": "ctrlaltbot",
   "version": "1.1.1",
   "description": "Discord bot for ctrl alt doc documentation sites, running as a Cloudflare Worker.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ctrl-alt-doc/ctrlaltbot.git"
+  },
+  "homepage": "https://github.com/ctrl-alt-doc/ctrlaltbot#readme",
+  "bugs": "https://github.com/ctrl-alt-doc/ctrlaltbot/issues",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
