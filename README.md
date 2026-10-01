@@ -6,8 +6,8 @@
 </picture>
 </p>
 
-<h2 align="center">A Discord Bot for <a href="https://github.com/ctrl-alt-doc/ctrlaltdoc" />ctrl alt doc</a></h2>
-  
+<h2 align="center">Your Docs, in Discord</h2>
+
 [![npm](https://img.shields.io/npm/v/ctrlaltbot?style=flat-square&color=ce0985&labelColor=212121&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNiAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIj48ZyBzdHJva2Utd2lkdGg9IjIuNCI+PHBhdGggZD0iTTUuNiAzLjRINGEyIDIgMCAwIDAtMiAydjEzLjJhMiAyIDAgMCAwIDIgMmgxLjYiLz48cGF0aCBkPSJNMjAuNCAzLjRIMjJhMiAyIDAgMCAxIDIgMnYxMy4yYTIgMiAwIDAgMS0yIDJoLTEuNiIvPjxjaXJjbGUgY3g9IjExLjIiIGN5PSIxNCIgcj0iMy4zIi8+PHBhdGggZD0iTTE0LjUgMTAuN3Y2LjYiLz48L2c+PHBhdGggZD0iTTE4LjQgOS42aDEuNHY4LjhoLTEuNHoiIGZpbGw9IiNmZmYiIHN0cm9rZT0ibm9uZSIvPjwvc3ZnPg==)](https://www.npmjs.com/package/ctraltbot)
 [![downloads](https://img.shields.io/npm/dm/ctrlaltbot?style=flat-square&color=be0078&labelColor=212121&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNiAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIj48ZyBzdHJva2Utd2lkdGg9IjIuNCI+PHBhdGggZD0iTTUuNiAzLjRINGEyIDIgMCAwIDAtMiAydjEzLjJhMiAyIDAgMCAwIDIgMmgxLjYiLz48cGF0aCBkPSJNMjAuNCAzLjRIMjJhMiAyIDAgMCAxIDIgMnYxMy4yYTIgMiAwIDAgMS0yIDJoLTEuNiIvPjxjaXJjbGUgY3g9IjExLjIiIGN5PSIxNCIgcj0iMy4zIi8+PHBhdGggZD0iTTE0LjUgMTAuN3Y2LjYiLz48L2c+PHBhdGggZD0iTTE4LjQgOS42aDEuNHY4LjhoLTEuNHoiIGZpbGw9IiNmZmYiIHN0cm9rZT0ibm9uZSIvPjwvc3ZnPg==)](https://www.npmjs.com/package/ctrlaltbot)
 [![docs](https://img.shields.io/badge/docs-ctrl_alt_doc-ce0985?style=flat-square&labelColor=212121&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNiAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIj48ZyBzdHJva2Utd2lkdGg9IjIuNCI+PHBhdGggZD0iTTUuNiAzLjRINGEyIDIgMCAwIDAtMiAydjEzLjJhMiAyIDAgMCAwIDIgMmgxLjYiLz48cGF0aCBkPSJNMjAuNCAzLjRIMjJhMiAyIDAgMCAxIDIgMnYxMy4yYTIgMiAwIDAgMS0yIDJoLTEuNiIvPjxjaXJjbGUgY3g9IjExLjIiIGN5PSIxNCIgcj0iMy4zIi8+PHBhdGggZD0iTTE0LjUgMTAuN3Y2LjYiLz48L2c+PHBhdGggZD0iTTE4LjQgOS42aDEuNHY4LjhoLTEuNHoiIGZpbGw9IiNmZmYiIHN0cm9rZT0ibm9uZSIvPjwvc3ZnPg==)](https://docs.ctrlaltdoc.cc/discord)
@@ -15,7 +15,7 @@
 [![Discord](https://img.shields.io/discord/1541521626137370698?style=flat-square&color=ce0985&labelColor=212121&logo=discord&logoColor=white)](https://discord.gg/f6XemeeUpD)
 
 
-The Discord companion for ctrl alt doc. It lets people search and read a ctrl alt doc documentation site without leaving Discord.
+The Discord companion for [ctrl alt doc](https://github.com/ctrl-alt-doc/ctrlaltdoc). Ask a question and get the section of your documentation that answers it, with the text, the code, and a link straight to the heading.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ctrl-alt-doc/ctrlaltbot/tree/main/template)
 
